@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Incident Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <style>
+        #map {
+            height: 600px;
+            position: relative;
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+            position: absolute;
+            top: 70px;
+            right: 10px;
+            z-index: 1000;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn i {
+            font-size: 20px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <button class="btn" id="showRouteBtn">
+        <i class="fas fa-walking"></i> Show Best Route
+    </button>
+
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([37.8715, -122.2730], 16);
+
+        // OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        const incidentMarkers = [
+            L.marker([37.8715, -122.2730]).addTo(map),
+            L.marker([37.8725, -122.2730]).addTo(map),
+            L.marker([37.8735, -122.2730]).addTo(map)
+        ];
+
+        const incidentCoords = incidentMarkers.map(marker => marker.getLatLng());
+
+        // calculate route avoiding incidents
+        function calculateRoute(start, end) {
+            const waypoints = [L.latLng(start), L.latLng(end)];
+
+            const customRouter = L.Routing.osrmv1({
+                serviceUrl: 'https://router.project-osrm.org/route/v1',
+                profile: 'foot' // walking route -> foot
+            });
+
+            customRouter.route({
+                coordinates: [start, end],
+                geometryOnly: true
+            }, (err, routes) => {
+                if (err || routes.length === 0) {
+                    console.error('Error calculating route:', err);
+                    alert('Error calculating route: ' + (err.message || err));
+                    return;
+                }
+
+                const route = routes[0];
+
+                L.Routing.control({
+                    waypoints,
+                    router: customRouter,
+                    createMarker: function() { return null; }
+                }).addTo(map).setWaypoints(waypoints);
+
+                L.geoJSON(route.geometry, {
+                    style: {
+                        color: 'blue',
+                        weight: 5,
+                        opacity: 0.7
+                    }
+                }).addTo(map);
+            });
+        }
+
+        document.getElementById('showRouteBtn').addEventListener('click', () => {
+            map.once('click', e => {
+                const start = map.getCenter();// rplace w/ users loc
+                const end = e.latlng;
+                calculateRoute(start, end);
+            });
+        });
+    </script>
+</body>
+
+</html>

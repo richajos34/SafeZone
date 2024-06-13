@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Links -->
+    <meta charset="UTF-8">
+    <title>Incident Map</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <style>
+        /* CSS Styles */
+        .chatbot-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .close-btn {
+            background-color: transparent;
+            border: none;
+            font-size: 25px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .chatbot-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .chatbot-container {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .chatbot-header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-body {
+            height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .chatbot-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .chatbot-input button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+
+        .chatbot-input button:hover {
+            background-color: #0056b3;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            background-color: #565657;
+            color: #fff;
+            padding: 15px 0px;
+        }
+
+        .left-section,
+        .middle-section,
+        .right-section {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            width: 50px;
+            margin-right: 10px;
+        }
+
+        .title {
+            margin: 0;
+        }
+
+        .signin-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 7px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .signin-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .search-btn {
+            margin-right: 10px;
+        }
+
+        .search-bar {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            width: 200px;
+            margin-left: 50px;
+        }
+
+
+        .right-section {
+            margin-left: auto;
+        }
+
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .signout-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 7px 14px;
+            border: none;
+            border-radius: 5px;
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+            margin-left: 10px;
+            display: none;
+        }
+
+        .signout-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+
+</head>
+
+<body>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut as firebaseSignOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyC_q74ELh3o3160740cyVIsCFS8-7pkd1g",
+            authDomain: "safezone-19745.firebaseapp.com",
+            projectId: "safezone-19745",
+            storageBucket: "safezone-19745.appspot.com",
+            messagingSenderId: "99115396728",
+            appId: "1:99115396728:web:b33b919855f2a7a3c0c78d",
+            measurementId: "G-1QRBZ619R4"
+        };
+
+        console.log("Initializing Firebase");
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        console.log("Firebase initialized");
+
+        const signInWithGoogle = () => {
+            console.log("Google sign-in button clicked");
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    const credential = GoogleAuthProvider.credentialFromResult(result);
+                    const token = credential.accessToken;
+                    const user = result.user;
+                    console.log("User signed in:", user);
+                    document.querySelector(".user-profile").style.display = "block";
+                    document.querySelector(".signout-btn").style.display = "inline-block";
+                })
+                // Handle Errors here.
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    const email = error.customData.email;
+                    const credential = GoogleAuthProvider.credentialFromError(error);
+                    console.error("Error signing in:", errorCode, errorMessage);
+                });
+        };
+
+        // user state changes
+        onAuthStateChanged(auth, (user) => {
+            console.log("Auth state changed");
+            if (user) {
+                console.log("User is signed in:", user);
+                document.querySelector(".signin-btn").style.display = "none";
+                document.querySelector(".user-profile img").src = user.photoURL; // Set profile picture
+                document.querySelector(".user-profile").style.display = "block";
+                document.querySelector(".signout-btn").style.display = "inline-block";
+            } else {
+                console.log("No user is signed in");
+                document.querySelector(".signin-btn").style.display = "block";
+                document.querySelector(".user-profile").style.display = "none";
+                document.querySelector(".signout-btn").style.display = "none";
+            }
+        });
+
+
+        // Sign Out
+        const signOut = () => {
+            console.log("Sign-out button clicked");
+            firebaseSignOut(auth).then(() => {
+                console.log("User signed out");
+                document.querySelector(".signin-btn").style.display = "block";
+                document.querySelector(".user-profile").style.display = "none";
+                document.querySelector(".signout-btn").style.display = "none";
+            }).catch((error) => {
+                console.error("Error signing out:", error);
+            });
+        };
+
+
+        // event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM fully loaded and parsed");
+            document.querySelector(".signin-btn").addEventListener('click', signInWithGoogle);
+            document.querySelector(".user-profile button").addEventListener('click', signOut);
+            document.querySelector(".signout-btn").addEventListener('click', signOut);
+        });
+    </script>
+    <div id="photoContainer">
+        <img id="photoImage" alt="Photo">
+        <div>
+            <button class="btn btn-primary" onclick="nextPhoto()">Next</button>
+            <button class="btn btn-primary" onclick="closePhotoContainer()">Close</button>
+        </div>
+    </div>
+    <div id="incidentContainer">
+        <form id="incidentForm" class="needs-validation" novalidate>
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" class="form-control" id="title" name="title" placeholder="Title">
+                <div class="invalid-feedback">
+                    Please provide a title.
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" class="form-control" id="description" name="description" placeholder="Description">
+                <div class="invalid-feedback">
+                    Please provide a description.
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" class="form-control" id="location" name="location" placeholder="Location">
+                <div class="invalid-feedback">
+                    Please provide a location.
+                </div>
+            </div>
+            <div class="form-group clock">
+                <label for="selected-time">Time:</label>
+                <input type="time" class="form-control" id="selected-time" required value="2023-12-31T09:00:00Z">
+                <div id="selected-time-display"></div>
+                <div id="timestamp"></div>
+            </div>
+            <div class="form-group">
+                <label for="type">Type</label>
+                <input type="text" class="form-control" id="type" name="type" placeholder="Type">
+                <div class="invalid-feedback">
+                    Please provide a type.
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="status">Type</label>
+                <input type="text" class="form-control" id="status" name="status" placeholder="Status">
+                <div class="invalid-feedback">
+                    Please provide a status.
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create Incident</button>
+            <button class="btn btn-primary" onclick="closePhotoContainer()">Cancel</button>
+        </form>
+    </div>
+    <!-- Nav Bar -->
+    <nav class="navbar">
+
+        <!-- Left Section -->
+        <div class="left-section">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Seal_of_University_of_California%2C_Berkeley.svg/1200px-Seal_of_University_of_California%2C_Berkeley.svg.png"
+                alt="Berkeley Logo" class="logo" />
+            <h1 class="title">Incident Reporting</h1>
+            <button class="btn" id="showRouteBtn" margin-right="100px">
+                <i class="fas fa-walking"></i>
+            </button>
+        </div>
+
+
+        <!-- Middle Section -->
+        <div class="search">
+            <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Find Incident...">
+        </div>
+        <div class="search-btn">
+            <button onclick="searchLocation()" class="btn btn-primary btn-sm" class="search-btn">Search</button>
+        </div>
+
+
+        <!-- Right Section -->
+        <div class="right-section">
+            <button class="signin-btn"> Sign In</button>
+            <button class="signout-btn">Sign Out</button>
+            <div class="user-profile">
+                <img src="https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg"
+                    alt="User Profile" class="profile-icon" width="50" height="50" />
+            </div>
+
+        </div>
+
+    </nav>
+
+    <button class="chatbot-btn" id="chatbotBtn">
+        <i class="fas fa-robot"></i>
+    </button>
+
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="chatbot-header">
+            <span>Chatbot</span>
+            <button class="close-btn" id="closeChatbotBtn">&times;</button>
+        </div>
+        <div class="chatbot-body" id="chatbotBody">
+            <!-- Chat content will appear here -->
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatbotInput" placeholder="Ask me anything...">
+            <button id="sendChatbotBtn">Send</button>
+        </div>
+    </div>
+
+
+    <script>
+        $(document).ready(function () {
+            // Initialization of Bootstrap
+            $('[data-toggle="dropdown"]').dropdown();
+            var myModal = new bootstrap.Modal(document.getElementById('exampleModal'));
+        });
+    </script>
+
+    <div id="map"></div>
+
+
+
+
+    <script src="scripts/flickrPhotos.js"></script>
+    <script src="scripts/data.js"></script>
+    <script src="scripts/mapView.js"></script>
+
+
+</body>
+
+</html>

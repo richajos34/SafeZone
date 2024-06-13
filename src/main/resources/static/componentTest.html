@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Incident Map and Chatbot</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #map {
+            height: 600px;
+            position: relative;
+        }
+
+        .chatbot-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .chatbot-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .chatbot-container {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .chatbot-header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-body {
+            height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .chatbot-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .chatbot-input button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+
+        .chatbot-input button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <button class="chatbot-btn" id="chatbotBtn">Chat with Bot</button>
+    
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="chatbot-header">
+            <span>Chatbot</span>
+            <button class="close-btn" id="closeChatbotBtn">&times;</button>
+        </div>
+        <div class="chatbot-body" id="chatbotBody">
+            <!-- Chat content will appear here -->
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatbotInput" placeholder="Ask me anything...">
+            <button id="sendChatbotBtn">Send</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([37.8715, -122.2730], 16); // UC Berkeley location
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        document.getElementById('chatbotBtn').addEventListener('click', () => {
+            document.getElementById('chatbotContainer').style.display = 'block';
+        });
+
+        document.getElementById('closeChatbotBtn').addEventListener('click', () => {
+            document.getElementById('chatbotContainer').style.display = 'none';
+        });
+
+        document.getElementById('sendChatbotBtn').addEventListener('click', async () => {
+            const input = document.getElementById('chatbotInput').value;
+            if (input.trim() !== '') {
+                addChatMessage('user', input);
+                console.log("user response: " + input);
+                document.getElementById('chatbotInput').value = '';
+
+                // Send the input to the backend
+                const response = await fetch('/api/incidents/search?query=' + encodeURIComponent(input));
+                const data = await response.json();
+                console.log(data);
+
+                if (data.length === 0) {
+                    addChatMessage('bot', 'No incidents found near the specified location.');
+                } else {
+                    const messages = data.map(incident => `${incident.title} at (${incident.location.x}, ${incident.location.y})`).join('<br>');
+                    console.log(messages);
+                    addChatMessage('bot', messages);
+                }
+            }
+        });
+
+        function addChatMessage(sender, message) {
+            const chatBody = document.getElementById('chatbotBody');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add(sender);
+            messageElement.innerHTML = message;
+            chatBody.appendChild(messageElement);
+            chatBody.scrollTop = chatBody.scrollHeight; // Scroll to the bottom
+        }
+    </script>
+</body>
+</html>
