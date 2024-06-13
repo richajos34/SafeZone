@@ -1,5 +1,5 @@
 # Local Crime Data Map Web Application
-## important update -> aaplication moved from warnME to this repo
+## important update -> aplication moved from warnME to this repo
 ## Overview
 This web application offers an interactive map interface to visualize and interact with local crime data based on Berkeley's Warn Me data.
 
