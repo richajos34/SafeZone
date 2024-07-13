@@ -21,6 +21,12 @@ public class GeocodingService {
         apiKey ="AIzaSyCedXCGNwepBSi8wHKg1aZuQPZHq_UAkYE";
         String url = "https://maps.googleapis.com/maps/api/geocode/json?address=" + location + "&key=" + apiKey;
 
+        /**
+         * Retrieves the latitude and longitude coordinates for the given location using the Google Maps Geocoding API.
+         *
+         * @param location The address or location to retrieve coordinates for.
+         * @return An array containing the latitude and longitude coordinates, or an empty array if the request fails.
+         */
         Request request = new Request.Builder()
                 .url(url)
                 .build();

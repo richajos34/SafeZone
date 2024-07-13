@@ -17,6 +17,12 @@ public class OpenAIService {
 
     private final OkHttpClient client = new OkHttpClient();
 
+    /**
+     * Extracts the location from a natural language query using the OpenAI API.
+     *
+     * @param naturalLanguageQuery the natural language query to extract the location from
+     * @return the extracted location, or an empty string if the extraction fails
+     */
     public String extractLocation(String naturalLanguageQuery) {
         JSONObject json = new JSONObject();
         json.put("model", "gpt-3.5-turbo");

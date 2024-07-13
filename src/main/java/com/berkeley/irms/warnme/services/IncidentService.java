@@ -26,6 +26,11 @@ public class IncidentService {
         //this.smsService = smsService;
     }
 
+    /**
+     * Retrieves all incidents from the incident repository, caching the results in memory for faster subsequent retrieval.
+     *
+     * @return a list of all incidents, retrieved from the cache if available, or from the repository if not.
+     */
     public List<Incident> getAllIncidents() {
         List<Incident> incidents = null;
         incidents = cache.get(incidentsCacheKey);
@@ -40,6 +45,14 @@ public class IncidentService {
         return incidents;
     }
 
+    /**
+     * Finds all incidents within the specified radius of the given latitude and longitude.
+     *
+     * @param lat The latitude of the center point.
+     * @param lon The longitude of the center point.
+     * @param radiusInMiles The radius in miles to search for incidents.
+     * @return A list of incidents that are within the specified radius.
+     */
     public List<Incident> findIncidentsNear(double lat, double lon, double radiusInMiles) {
         List<Incident> allIncidents = incidentRepository.findAll();
         List<Incident> nearbyIncidents = new ArrayList<>();
@@ -55,7 +68,17 @@ public class IncidentService {
 
         return nearbyIncidents;
     }
-    // Haversine formula
+    
+    /**
+     * Calculates the distance between two geographic coordinates in miles.
+     *
+     * @param lat1 The latitude of the first coordinate.
+     * @param lon1 The longitude of the first coordinate.
+     * @param lat2 The latitude of the second coordinate.
+     * @param lon2 The longitude of the second coordinate.
+     * @return The distance between the two coordinates in miles.
+     */
+    
     private double distance(double lat1, double lon1, double lat2, double lon2) {
         final int R = 3959; //earth radius
         double latDistance = Math.toRadians(lat2 - lat1);
@@ -75,10 +98,14 @@ public class IncidentService {
         return incidentRepository.findFirstByTitleContainingIgnoreCase(title);
     }
 
+    /**
+     * Creates a new incident and saves it to the repository.
+     *
+     * @param incident The incident to be created.
+     * @return The saved incident.
+     */
     public Incident createIncident(Incident incident) {
         Incident savedIncident = incidentRepository.save(incident);
-        //String message = "New Incident Reported: " + incident.getTitle() + " at " + incident.getLocation().toString();
-        //smsService.sendSms("+19096829050", message);
         cache.clear();
         return savedIncident;
     }
