@@ -22,6 +22,24 @@ public class CrimeLogParser {
         this.incidentService = incidentService;
     }
 
+    /**
+     * Parses a string of crime log data into a JSON array of crime incident objects.
+     *
+     * The input `ocrText` parameter is expected to be a multi-line string containing
+     * crime incident data, with each incident separated by a blank line. The method
+     * will parse this input and return a JSON array, where each element in the array
+     * is a JSON object representing a single crime incident.
+     *
+     * The JSON object for each incident will contain the following keys:
+     * - `case_number`: The case number for the incident
+     * - `crimes`: A description of the crime(s) committed
+     * - `reported_date`: The date the incident was reported
+     * - `location`: The location where the incident occurred
+     * - `disposition`: The disposition of the incident (e.g. "Closed", "Active")
+     *
+     * @param ocrText The multi-line string of crime log data to be parsed.
+     * @return A JSON array of crime incident objects.
+     */
     public JSONArray parseCrimeLogToJson(String ocrText) {
         JSONArray jsonArray = new JSONArray();
         String[] entries = ocrText.split("\n\n");
@@ -47,6 +65,25 @@ public class CrimeLogParser {
         return jsonArray;
     }
 
+    /**
+     * Parses a JSON array of crime incident data into a list of Incident objects.
+     *
+     * This method takes a JSONArray of crime incident data, where each element in the
+     * array is a JSONObject representing a single crime incident. It then extracts the
+     * relevant information from each JSONObject and creates an Incident object with
+     * that data.
+     *
+     * The Incident objects created by this method will have the following properties:
+     * - caseNumber: The case number for the incident
+     * - description: A description of the crime(s) committed
+     * - location: The location where the incident occurred
+     * - reportedDate: The date the incident was reported
+     * - disposition: The disposition of the incident (e.g. "Closed", "Active")
+     * - type: The type of incident (e.g. "Crime")
+     *
+     * @param jsonArray The JSONArray of crime incident data to be parsed.
+     * @return A list of Incident objects representing the crime incidents.
+     */
     public List<Incident> parseJsonToIncidents(JSONArray jsonArray) {
         List<Incident> incidents = new ArrayList<>();
 

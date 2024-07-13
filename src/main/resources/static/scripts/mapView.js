@@ -92,12 +92,13 @@ document.getElementById('closeChatbotBtn').addEventListener('click', () => {
     document.getElementById('chatbotContainer').style.display = 'none';
 });
 
+
 document.getElementById('sendChatbotBtn').addEventListener('click', async () => {
     const input = document.getElementById('chatbotInput').value;
     if (input.trim() !== '') {
         addChatMessage('user', input);
         document.getElementById('chatbotInput').value = '';
-
+        /**
         // Send the input to the backend
         const response = await fetch('/api/incidents/search?query=' + encodeURIComponent(input));
         const data = await response.json();
@@ -108,8 +109,10 @@ document.getElementById('sendChatbotBtn').addEventListener('click', async () => 
             const messages = data.map(incident => `${incident.title} at (${incident.location.x}, ${incident.location.y})`).join('<br>');
             addChatMessage('bot', messages);
         }
+        */
     }
 });
+
 
 function addChatMessage(sender, message) {
     const chatBody = document.getElementById('chatbotBody');
@@ -121,6 +124,18 @@ function addChatMessage(sender, message) {
 }
 
 
+/**
+ * Handles the submission of the incident form, including sending the incident data to the backend API.
+ * 
+ * When the incident form is submitted, this event listener function is triggered. It:
+ * 1. Prevents the default form submission behavior.
+ * 2. Hides the incident container.
+ * 3. Extracts the selected time from the form and converts it to a timestamp.
+ * 4. Retrieves the incident details from the form fields.
+ * 5. Creates a new incident object with the form data.
+ * 6. Sends the incident data to the backend API using a POST request.
+ * 7. If the API request is successful, adds the new incident marker to the map.
+ */
 document.getElementById("incidentForm").addEventListener("submit", function (event) {
     console.log("got to form");
     event.preventDefault(); // Prevent the default form submission

@@ -4,6 +4,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "incidents")
+/**
+ * Represents an incident that can be reported and tracked within the WarnMe application.
+ * Incidents are stored in a MongoDB database and have various fields to capture details about the incident.
+ */
 public class Incident {
 
     @Id

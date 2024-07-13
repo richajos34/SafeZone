@@ -1,5 +1,11 @@
 
 // Function to handle button click within marker popup
+/**
+ * Handles the click event on a button within a marker popup. Fetches Flickr photos based on the latitude and longitude provided, and updates the popup content to display the photos.
+ *
+ * @param {number} lat - The latitude of the marker location.
+ * @param {number} lon - The longitude of the marker location.
+ */
 function handlePopupButtonClick(lat, lon) {
     fetchFlickrPhotos(lat, lon).then(photoUrls => {
       if (photoUrls.length > 0) {
